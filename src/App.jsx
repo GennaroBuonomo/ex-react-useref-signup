@@ -1,31 +1,64 @@
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import './App.css'
+
+const letters = "abcdefghijklmnopqrstuvwxyz";
+const numbers = "0123456789";
+const symbols = "!@#$%^&*()-_=+[]{}|;:'\",.<>?/`~";
 
 function App() {
   const [fullName, setFullName] = useState("");
-  const [userName, setUserName] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [specialization, setSpecialization] = useState("");
   const [experienceYears, setExperienceYears] = useState("");
   const [description, setDescription] = useState("");
 
+  const isUsernameValid = useMemo(() => {
+
+   const charsValid = username.split("").every(char =>
+    letters.includes(char.toLowerCase()) || 
+    numbers.includes(char)
+   );
+
+   return charsValid && username.trim().length >= 6;
+
+  },[username]);
+
+  const isPasswordValid = useMemo(() => {
+
+   return (
+    password.trim().length >= 8 &&
+    password.split("").some(char => letters.includes(char)) &&
+    password.split("").some(char => numbers.includes(char)) &&
+    password.split("").some(char => symbols.includes(char)) 
+   )
+
+  },[password]);
+
+  const isDescriptionValid = useMemo(() => {
+    return description.trim().length >= 100 && description.trim().length < 1000
+  },[description])
+
   const heandleSubmit = e => {
     e.preventDefault();
     if(
       !fullName.trim() || 
-      !userName.trim() || 
+      !username.trim() || 
       !password.trim() || 
       !specialization.trim() || 
       !experienceYears.trim() ||
       experienceYears <= 0 ||
-      !description.trim()
+      !description.trim() ||
+      !isUsernameValid ||
+      !isPasswordValid ||
+      !isDescriptionValid
     ){
       alert("Errore: Tutti i campi sono obbligatori!");
       return;
     }
     console.log('Submit effettuato:',{
       fullName,
-      userName,
+      username,
       password,
       specialization,
       experienceYears,
@@ -51,9 +84,14 @@ function App() {
           <p>Username</p>
           <input 
           type="text"
-          value={userName}
-          onChange={(e) => setUserName(e.target.value)} 
+          value={username}
+          onChange={(e) => setUsername(e.target.value)} 
           />
+          {username.trim() && (
+            <p style={{color: isUsernameValid ?'green': 'red'}}>
+              {isUsernameValid ? "Username Valido" : "Deve contenere almeno 6 caratteri alfanumerici"}
+            </p>
+          )}
         </label>
         <label>
           <p>password</p>
@@ -62,6 +100,11 @@ function App() {
           value={password}
           onChange={(e) => setPassword(e.target.value)} 
           />
+          {password.trim() && (
+            <p style={{color: isPasswordValid ?'green': 'red'}}>
+              {isPasswordValid ? "Password Valido" : "Deve contenere almeno 8 caratteri, 1 lattera, 1 numero, 1 simbolo"}
+            </p>
+          )}
         </label>
         <label>
           <p>Specializzazione</p>
@@ -88,6 +131,11 @@ function App() {
             value={description}
             onChange={e => setDescription(e.target.value)} 
           />
+          {description.trim() && (
+            <p style={{color: isDescriptionValid ?'green': 'red'}}>
+              {isDescriptionValid ? "descrizione Valido" : `Deve avere tra i 100 e i 1000 caratteri (${description.trim().length})`}
+            </p>
+          )}
         </label>
       <button type="submit">Registati</button>
       </form>
